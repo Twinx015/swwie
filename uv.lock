@@ -1,0 +1,31 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "slint"
+version = "1.19.0b1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/f8/3c7a37c2f95cf828a26f1d1304f6ede8f175182c719ba53690332072671a/slint-1.19.0b1.tar.gz", hash = "sha256:29b86cd93994d7e835fb69bbe2747d4c0acb2a45ffef25301cd74fc5669281df", size = 3423144, upload-time = "2026-11-16T13:34:21.049Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/53/a646842b414224291fc189e3b0498f2174b2f4a5aa6df3e3b70146843c6a/slint-1.19.0b1-cp311-abi3-ios_13_0_arm64_iphoneos.whl", hash = "sha256:1aab37d15c5b7b9448985f8d2f630beeba353a50d889bc3b3496f775c820546c", size = 12255326, upload-time = "2026-11-16T13:33:26.527Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/6d/ada1c12b4900718edd3c7c5ba4635640c2fc40ed812c27995d82505e1729/slint-1.19.0b1-cp311-abi3-ios_13_0_arm64_iphonesimulator.whl", hash = "sha256:a122a3f0fd85bcc5a0b0221f27d0175d3e19f9aa71dc8bc3d023e32ea85bbcb5", size = 12476233, upload-time = "2026-11-16T13:33:29.733Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/6a/a532d62149cef41000c35cac06cfdd94456778ecfaf0ec0c47a6bf1ae2cb/slint-1.19.0b1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:d4e074fa4744aa8fe9f4d670dc899260d240d89b8c6d328a3918412e220b632b", size = 12156263, upload-time = "2026-11-16T13:33:37.062Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/39/2f9aac57503f813f173dfeecab9c0d4fdebe6b284be27577c231a3cb7245/slint-1.19.0b1-cp311-abi3-manylinux_2_35_aarch64.whl", hash = "sha256:d7f3af44a32186c6a33b8c2a97c3af5fdba1672eca56a48d21b2f96b79d233c1", size = 15865482, upload-time = "2026-11-16T13:33:40.537Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/6e/43a077e88ab9ddf824280ec176134c403b4421f3d360814b4fcf44b8ea59/slint-1.19.0b1-cp311-abi3-manylinux_2_35_armv7l.whl", hash = "sha256:f652db50cd3ff52e761d2c5ef53f446edecc25b040b50d568da4085a764ebfaa", size = 15897464, upload-time = "2026-11-16T13:33:44.315Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/bc/a269830e68b8237c95d194328d820ec6b2304d816f6bc5bc535e967266c1/slint-1.19.0b1-cp311-abi3-manylinux_2_35_x86_64.whl", hash = "sha256:0cdc7fb331d7f032b604298a856c5675fe5023c5b973b8aaf3d716a78243ef16", size = 16300998, upload-time = "2026-11-16T13:33:47.098Z" },
+    { url = "https://files.pythonhosted.org/packages/20/46/30f7915808e198b0d0248eb2cb7108d6d3ca300a41df5fd028067e419857/slint-1.19.0b1-cp311-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:a9aa8ab261096fd6bca52763847df3c1920edfcb5de8ca8e54d276dc2b0fbcde", size = 16409416, upload-time = "2026-11-16T13:33:50.276Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/9a/b75b2a7d663eab4a0da85ab2eed782401fdd442a17bdf4ed48cfc82aada0/slint-1.19.0b1-cp311-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:0c197bdb161c291f8935c81dde2f7415a83f2a908a616d03a6dc73bdbe17fa6b", size = 16763341, upload-time = "2026-11-16T13:33:53.013Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/75/a4500bfff56844b76aeeb61cd90e96d8752002d1d091d9b22f8fa0dde8ad/slint-1.19.0b1-cp311-abi3-win_amd64.whl", hash = "sha256:7d0a56fe0b99fb99750c9fc4b0f391c516e7c22fe55320e9118339dac74b4809", size = 13236363, upload-time = "2026-11-16T13:33:57.277Z" },
+]
+
+[[package]]
+name = "swwie"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "slint" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "slint" }]
