@@ -18,3 +18,8 @@ include = ["UI*", "fetchers*"]
 
 [tool.setuptools.package-data]
 UI = ["*.slint"]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.22.3",
+]
