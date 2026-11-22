@@ -1,0 +1,418 @@
+import { Button, CheckBox, ComboBox, LineEdit, Palette, ScrollView, SpinBox } from "std-widgets.slint";
+
+export struct Wall {
+    id: string,
+    preview: image,
+    resolution: string,
+}
+
+export struct Swatch {
+    name: string,
+    color: color,
+}
+
+export struct Tag {
+    id: int,
+    name: string,
+}
+
+export component AppWindow inherits Window {
+    title: "Wallhaven";
+    preferred-width: 1100px;
+    preferred-height: 760px;
+    min-width: 700px;
+    min-height: 480px;
+
+    in property <[Wall]> walls;
+    in property <string> status;
+    in property <bool> loading;
+    in property <bool> can-load-more;
+    in property <string> download-dir;
+    in property <string> config-path;
+    in property <string> settings-error;
+    in property <string> wallpaper-tool;
+    in property <string> matugen-info;
+
+    in-out property <bool> settings-open;
+    in-out property <string> settings-draft;
+    in-out property <int> settings-results;
+    in-out property <bool> settings-matugen;
+
+    in property <string> active-tag;
+    in-out property <int> purity-index;
+    in-out property <int> sorting-index;
+
+    in property <[Swatch]> swatches;
+    in property <string> picked-color;
+
+    in-out property <bool> preview-open;
+    in property <bool> preview-ready;
+    in property <bool> preview-loading;
+    in property <image> preview-image;
+    in property <string> preview-title;
+    in property <string> preview-resolution;
+    in property <string> preview-error;
+    in property <[Tag]> preview-tags;
+
+    callback search(string);
+    callback load-more();
+    callback apply(string);
+    callback download(string);
+    callback preview-wall(string);
+    callback close-preview();
+    callback tag-picked(int, string);
+    callback open-settings();
+    callback save-settings();
+    callback close-settings();
+    callback color-picked(string);
+    callback clear-tag();
+    callback filters-changed();
+
+    property <length> cell: 220px;
+    property <int> cols: max(1, floor(grid.visible-width / cell));
+    property <int> rows: ceil(root.walls.length / root.cols);
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 10px;
+
+        HorizontalLayout {
+            spacing: 8px;
+
+            input := LineEdit {
+                placeholder-text: "Search wallpapers...";
+                accepted(text) => { root.search(text); }
+            }
+
+            Button {
+                text: "Search";
+                enabled: !root.loading;
+                clicked => { root.search(input.text); }
+            }
+
+            Button {
+                text: "Settings";
+                clicked => { root.open-settings(); }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+
+            Text {
+                text: "Color";
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(0.35);
+            }
+
+            ScrollView {
+                height: 30px;
+                horizontal-stretch: 1;
+                content-width: swatch-row.preferred-width;
+
+                swatch-row := HorizontalLayout {
+                    spacing: 6px;
+
+                    for swatch in root.swatches : Rectangle {
+                        width: 18px;
+                        height: 18px;
+                        border-radius: 9px;
+                        background: swatch.color;
+                        border-width: swatch.name == root.picked-color ? 2px : 1px;
+                        border-color: swatch.name == root.picked-color ? white : Palette.border;
+
+                        TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => { root.color-picked(swatch.name); }
+                        }
+                    }
+                }
+            }
+
+            Button {
+                text: "Any";
+                visible: root.picked-color != "";
+                clicked => { root.color-picked(""); }
+            }
+
+            ComboBox {
+                model: ["SFW", "Sketchy", "NSFW", "Everything"];
+                current-index <=> root.purity-index;
+                selected(value) => { root.filters-changed(); }
+            }
+
+            ComboBox {
+                model: ["Relevance", "Latest", "Top", "Random", "Views", "Favorites"];
+                current-index <=> root.sorting-index;
+                selected(value) => { root.filters-changed(); }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+
+            Text {
+                horizontal-stretch: 1;
+                vertical-alignment: center;
+                overflow: elide;
+                text: root.loading ? "Loading..." : root.status;
+                color: Palette.foreground.transparentize(0.35);
+            }
+
+            Button {
+                text: "Tag: " + root.active-tag + "  ×";
+                visible: root.active-tag != "";
+                clicked => { root.clear-tag(); }
+            }
+        }
+
+        grid := ScrollView {
+            vertical-stretch: 1;
+            content-height: root.rows * root.cell;
+
+            for wall[i] in root.walls : Rectangle {
+                x: mod(i, root.cols) * root.cell;
+                y: floor(i / root.cols) * root.cell;
+                width: root.cell;
+                height: root.cell;
+                border-radius: 6px;
+                clip: true;
+
+                Image {
+                    x: 4px;
+                    y: 4px;
+                    width: parent.width - 8px;
+                    height: parent.height - 8px;
+                    source: wall.preview;
+                    image-fit: cover;
+                }
+
+                Rectangle {
+                    x: 8px;
+                    y: parent.height - 30px;
+                    width: parent.width - 16px;
+                    height: 22px;
+                    border-radius: 4px;
+                    background: #00000099;
+                    visible: wall.resolution != "";
+
+                    Text {
+                        text: wall.resolution;
+                        color: white;
+                        font-size: 11px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
+                TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => { root.apply(wall.id); }
+                }
+
+                Button {
+                    x: 8px;
+                    y: 8px;
+                    width: 30px;
+                    height: 26px;
+                    text: "⤢";
+                    clicked => { root.preview-wall(wall.id); }
+                }
+
+                Button {
+                    x: parent.width - 38px;
+                    y: 8px;
+                    width: 30px;
+                    height: 26px;
+                    text: "↓";
+                    clicked => { root.download(wall.id); }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            alignment: center;
+
+            Button {
+                text: "↓";
+                width: 48px;
+                visible: root.can-load-more;
+                enabled: !root.loading;
+                clicked => { root.load-more(); }
+            }
+        }
+    }
+
+    if root.preview-open : Rectangle {
+        background: #000000cc;
+
+        TouchArea {
+            clicked => { root.close-preview(); }
+        }
+
+        Rectangle {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            width: min(parent.width - 64px, 1100px);
+            height: parent.height - 64px;
+            border-radius: 10px;
+            border-width: 1px;
+            border-color: Palette.border;
+            background: Palette.background;
+
+            TouchArea { }
+
+            VerticalLayout {
+                padding: 14px;
+                spacing: 10px;
+
+                HorizontalLayout {
+                    spacing: 8px;
+
+                    Text {
+                        text: root.preview-title;
+                        font-size: 16px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+
+                    Text {
+                        horizontal-stretch: 1;
+                        text: root.preview-resolution;
+                        color: Palette.foreground.transparentize(0.35);
+                        vertical-alignment: center;
+                    }
+
+                    Button {
+                        text: "Close";
+                        clicked => { root.close-preview(); }
+                    }
+                }
+
+                if root.preview-loading : Text {
+                    text: "Loading full image...";
+                    color: Palette.foreground.transparentize(0.35);
+                }
+
+                if root.preview-error != "" : Text {
+                    text: root.preview-error;
+                    wrap: word-wrap;
+                    color: #cc4444;
+                }
+
+                Rectangle {
+                    vertical-stretch: 1;
+                    clip: true;
+
+                    Image {
+                        width: 100%;
+                        height: 100%;
+                        source: root.preview-image;
+                        image-fit: contain;
+                        visible: root.preview-ready;
+                    }
+                }
+
+                if root.preview-tags.length > 0 : ScrollView {
+                    height: 42px;
+                    content-width: tag-row.preferred-width;
+
+                    tag-row := HorizontalLayout {
+                        spacing: 6px;
+
+                        for tag in root.preview-tags : Button {
+                            text: tag.name;
+                            clicked => { root.tag-picked(tag.id, tag.name); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.settings-open : Rectangle {
+        background: #00000066;
+
+        TouchArea {
+            clicked => { root.close-settings(); }
+        }
+
+        panel := Rectangle {
+            width: min(parent.width - 64px, 560px);
+            height: panel-layout.preferred-height;
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            border-radius: 10px;
+            border-width: 1px;
+            border-color: Palette.border;
+            background: Palette.background;
+
+            TouchArea { }
+
+            panel-layout := VerticalLayout {
+                padding: 20px;
+                spacing: 12px;
+
+                Text {
+                    text: "Settings";
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+
+                Text {
+                    text: "Download folder";
+                }
+
+                LineEdit {
+                    text <=> root.settings-draft;
+                    placeholder-text: "~/Pictures/wallpapers";
+                }
+
+                Text {
+                    text: "Results per load";
+                }
+
+                SpinBox {
+                    value <=> root.settings-results;
+                    minimum: 1;
+                    maximum: 96;
+                }
+
+                CheckBox {
+                    text: "Apply colors with matugen";
+                    checked <=> root.settings-matugen;
+                }
+
+                Text {
+                    text: "Wallpaper tool: " + root.wallpaper-tool + " · " + root.matugen-info;
+                    font-size: 11px;
+                    wrap: word-wrap;
+                    color: Palette.foreground.transparentize(0.35);
+                }
+
+                Text {
+                    text: root.settings-error;
+                    visible: root.settings-error != "";
+                    wrap: word-wrap;
+                    color: #cc4444;
+                }
+
+                HorizontalLayout {
+                    alignment: end;
+                    spacing: 8px;
+
+                    Button {
+                        text: "Cancel";
+                        clicked => { root.close-settings(); }
+                    }
+
+                    Button {
+                        text: "Save";
+                        primary: true;
+                        clicked => { root.save-settings(); }
+                    }
+                }
+            }
+        }
+    }
+}
